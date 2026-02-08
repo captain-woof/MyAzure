@@ -22,7 +22,6 @@ function Get-MyAzSignedJWT {
             [string]$TenantID,
             [string]$ApplicationId,
             [string]$KeyVaultAccessToken,
-            [string]$ResourceScopeUri,
             $Certificate
         )
     $audience = "https://login.microsoftonline.com/$($TenantID)/oauth2/token"

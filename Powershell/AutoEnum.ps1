@@ -51,7 +51,7 @@ foreach ($application in $applications) {
 			$keyCredentials += [PSCustomObject]@{
 				Id = $keyCredential.KeyId
 				Name = $keyCredential.DisplayName
-				Thumprint = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
+				Thumbprint = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
 				Type = $keyCredential.Type
 			}
 		}
