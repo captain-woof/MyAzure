@@ -1,6 +1,6 @@
 function Get-MyAzPermissionOverResource {
     param(
-        [string]$ResourceUri
+        [string]$ResourceUri,
         [string]$ARMAccessToken
     )
     $URI = "https://management.azure.com$($ResourceUri)/providers/Microsoft.Authorization/permissions?api-version=2022-04-01"

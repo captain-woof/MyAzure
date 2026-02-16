@@ -26,9 +26,12 @@ function Get-MyAzPrincipalFromId {
 }
 
 function Get-MyAzDirectoryRoleAssignment {
-    $roles = Get-MgRoleManagementDirectoryRoleAssignment
     $rolesProcessed = @()
+
+    # Directory roles
+    $roles = Get-MgRoleManagementDirectoryRoleAssignment
     $roles | ForEach-Object {
+        
         $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $_.RoleDefinitionId
 
         $principal = Get-MyAzPrincipalFromId -PrincipalId $_.PrincipalId
@@ -45,8 +48,63 @@ function Get-MyAzDirectoryRoleAssignment {
             AppId = $principal.AppId
             AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
             ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+            IsPimRole = $false
+            IsPimRoleEligible = $false
+            IsPimRoleActive = $false
         }
     }
+    # PIM Roles
+
+    ## Elibible
+    $roles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule
+    foreach ($role in $roles) {
+        $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
+
+        $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
+
+        $rolesProcessed += [PSCustomObject]@{
+            DirectoryScopeId = $role.DirectoryScopeId
+            PrincipalName = $principal.DisplayName
+            PrincipalId = $role.PrincipalId
+            RoleDisplayName = $roleDef.DisplayName
+            RoleDescription = $roleDef.Description
+            RoleId = $roleDef.Id
+            Condition = $role.Condition
+            ConditionRoleDef = $roleDef.RolePermissions.Condition
+            AppId = $principal.AppId
+            AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
+            ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+            IsPimRole = $true
+            IsPimRoleEligible = $true
+            IsPimRoleActive = $false
+        }
+    }
+
+    ## Active
+    $roles = Get-MgRoleManagementDirectoryRoleAssignmentSchedule
+    foreach ($role in $roles) {
+        $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
+
+        $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
+
+        $rolesProcessed += [PSCustomObject]@{
+            DirectoryScopeId = $role.DirectoryScopeId
+            PrincipalName = $principal.DisplayName
+            PrincipalId = $role.PrincipalId
+            RoleDisplayName = $roleDef.DisplayName
+            RoleDescription = $roleDef.Description
+            RoleId = $roleDef.Id
+            Condition = $role.Condition
+            ConditionRoleDef = $roleDef.RolePermissions.Condition
+            AppId = $principal.AppId
+            AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
+            ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+            IsPimRole = $true
+            IsPimRoleEligible = $true
+            IsPimRoleActive = $true
+        }
+    }
+
     return $rolesProcessed
 }
 
@@ -198,6 +256,14 @@ function Get-MyAzOwnedPricipals {
     } catch {}
 }
 
+function Get-MyAzAuthenticationMethods {
+    $policies = (Get-MgPolicyAuthenticationMethodPolicy).AuthenticationMethodConfigurations
+    $result = @()
+
+    $result = $policies | Select-Object *, @{Name='appliedOn'; Expression = { $_.AdditionalProperties.includeTargets }}
+    return $result
+}
+
 function Get-MyAzConditionalAccessPolicies {
     # Retrieve all conditional access policies
     $policies = Get-MgIdentityConditionalAccessPolicy
@@ -273,12 +339,27 @@ function Get-MyAzConditionalAccessPolicies {
     return $results
 }
 
-function Perform-MyAzDeviceCodeFlow {
-    param(
-        [string]$AppId
-        [string]$TenantID
-    )
-    # Prepare device code and user code
+function Get-MyAzCrossTenantAccessPolicy {
+    return Get-MgPolicyCrossTenantAccessPolicyPartner | ConvertTo-Json
+}
 
-    # Keep polling for successful authentication
+function Request-MyAzPimRole {
+    param(
+        [string]$PrincipalId,
+        [string]$RoleDefinitionId,
+        [string]$DirectoryScopeId,
+        [string]$Justification,
+        [string]$Duration = "PT5M"
+    )
+    New-MgRoleManagementDirectoryRoleAssignmentScheduleRequest `
+    -Action "SelfActivate" `
+    -PrincipalId $PrincipalId `
+    -RoleDefinitionId $RoleDefinitionId `
+    -DirectoryScopeId $DirectoryScopeId `
+    -Justification "Justification" `
+    -ScheduleInfo @{ 
+        StartDateTime = (Get-Date).ToUniversalTime()
+        Expiration = @{ Type = "AfterDuration"; Duration = $Duration }
+    }
+
 }
