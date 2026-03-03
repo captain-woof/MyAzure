@@ -5,12 +5,12 @@ function Send-MyAzEmail {
         [string]$From,
         [string]$To,
         [string]$Subject,
-        [string]$Body,
+        [string]$Body
     )
-    $password = ConvertTo-SecureString $Password -AsPlainText -Force
-    $creds = New-Object System.Management.Automation.PSCredential($Email, $password)
+    $passwordSec = ConvertTo-SecureString $Password -AsPlainText -Force
+    $creds = New-Object System.Management.Automation.PSCredential($Email, $passwordSec)
 
-    if ($From -eq $null) {
+    if ($From.Length -eq 0) {
         $From = $Email
     }
 
