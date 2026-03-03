@@ -1,13 +1,16 @@
 function Get-MyAzStorageAccount {
     param(
-        [string]$Name,
         [string]$StorageAccountAccessToken
     )
     # Get all storage accounts
     $storageAccounts = Get-AzStorageAccount
 
     # Further enumerate each storage account
-    foreach ($storageAccount in $storageAccounts) {
+    foreach ($storageAccount in $storageAccounts) {    
+        #Print name
+        Write-Host "`nStorage account name: $($storageAccount.StorageAccountName)"
+        Write-Host "`Resource group name: $($storageAccount.ResourceGroupName)"
+        
         # Check for Blob
         Write-Host "Blob containers:"
         try {
@@ -37,7 +40,8 @@ function Get-MyAzStorageAccount {
         }
         
         # Check for File Shares
-        Write-Host "`nFile Shares:"
+        Write-Host "File Shares:"
+        Write-Host " - Authentication type: $($storageAccount.AzureFilesIdentityBasedAuth.DirectoryServiceOptions)"
         try {
             $shares = Get-AzStorageShare -Context $storageAccount.Context
             if ($shares) {
@@ -48,7 +52,7 @@ function Get-MyAzStorageAccount {
         }
 
         # Check for Queues
-        Write-Host "`nQueues:"
+        Write-Host "Queues:"
         try {
             $queues = Get-AzStorageQueue -Context $storageAccount.Context
             if ($queues) {
@@ -59,7 +63,7 @@ function Get-MyAzStorageAccount {
         }
 
         # Check for Tables
-        Write-Host "`nTables:"
+        Write-Host "Tables:"
         try {
             $tables = Get-AzStorageTable -Context $storageAccount.Context
             if ($tables) {
@@ -69,6 +73,8 @@ function Get-MyAzStorageAccount {
         } catch {
         }
     }
+
+    return $storageAccounts
 }
 
 function Get-MyAzStorageAccountContainerFiles {

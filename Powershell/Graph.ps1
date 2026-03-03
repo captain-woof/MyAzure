@@ -363,3 +363,50 @@ function Request-MyAzPimRole {
     }
 
 }
+
+function Get-MyAzOutlookEmails {
+    $UserId = (Get-MgContext).Account
+
+    $messagesProcessed = @()
+
+    $messages = Get-MgUserMessage -UserId $UserId
+    foreach($message in $messages) {
+        $messagesProcessed += [PSCustomObject]@{
+            Subject = $message.Subject
+            Body = $message.Body.Content
+        }
+    }
+
+    return $messagesProcessed
+}
+
+function Get-MyAzTeamsChats {
+    $chatsCustom = @()
+
+    $chats = Get-MgChat
+    foreach ($chat in $chats) {
+        $messages = Get-MgChatMessage -ChatId $chat.Id
+        $members = Get-MgChatMember -ChatId $chat.Id
+
+        $messagesCustom = @()
+        $membersCustom = @()
+
+        foreach ($message in $messages) {
+            $messagesCustom += $message.Body.Content
+        }
+
+        foreach ($member in $members) {
+            $membersCustom += $member.AdditionalProperties.email
+        }
+
+        $chatCustom = [PSCustomObject]@{
+            Id = $chat.Id
+            Messages = $messagesCustom
+            Members = $membersCustom
+        }
+
+        $chatsCustom += $chatCustom
+    }
+
+    return $chatsCustom
+}
