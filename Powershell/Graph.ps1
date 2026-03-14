@@ -179,7 +179,8 @@ function Get-MyAzApplications {
 	    		$ApplicationKeyCredentials += [PSCustomObject]@{
 	    			Id = $keyCredential.KeyId
 	    			Name = $keyCredential.DisplayName
-	    			Thumbprint = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
+                    ThumbprintB64 = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
+                    ThumbprintHex = [System.BitConverter]::ToString($keyCredential.CustomKeyIdentifier).Replace("-", "")
 	    			Type = $keyCredential.Type
                     Key = $keyCredential.Key
 	    		}
@@ -213,6 +214,7 @@ function Get-MyAzApplications {
 	    			ThumbprintB64 = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
                     ThumbprintHex = [System.BitConverter]::ToString($keyCredential.CustomKeyIdentifier).Replace("-", "")
 	    			Type = $keyCredential.Type
+                    Key = $keyCredential.Key
 	    		}
 	    	}
 	    	else {
@@ -221,6 +223,7 @@ function Get-MyAzApplications {
 	    			Name = $keyCredential.DisplayName
 	    			KeyIdentifier = $keyCredential.CustomKeyIdentifier
 	    			Type = $keyCredential.Type
+                    Key = $keyCredential.Key
 	    		}
 	    	}
 	    }
