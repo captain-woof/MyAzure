@@ -29,82 +29,89 @@ function Get-MyAzDirectoryRoleAssignment {
     $rolesProcessed = @()
 
     # Directory roles
-    $roles = Get-MgRoleManagementDirectoryRoleAssignment
-    $roles | ForEach-Object {
-        
-        $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $_.RoleDefinitionId
+    try {
+        $roles = Get-MgRoleManagementDirectoryRoleAssignment
+        $roles | ForEach-Object {
 
-        $principal = Get-MyAzPrincipalFromId -PrincipalId $_.PrincipalId
+            $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $_.RoleDefinitionId
 
-        $rolesProcessed += [PSCustomObject]@{
-            PrincipalName = $principal.DisplayName
-            PrincipalId = $_.PrincipalId
-            RoleDisplayName = $roleDef.DisplayName
-            RoleDescription = $roleDef.Description
-            RoleId = $roleDef.Id
-            DirectoryScopeId = $_.DirectoryScopeId
-            Condition = $_.Condition
-            ConditionRoleDef = $roleDef.RolePermissions.Condition
-            AppId = $principal.AppId
-            AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
-            ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
-            IsPimRole = $false
-            IsPimRoleEligible = $false
-            IsPimRoleActive = $false
+            $principal = Get-MyAzPrincipalFromId -PrincipalId $_.PrincipalId
+
+            $rolesProcessed += [PSCustomObject]@{
+                PrincipalName = $principal.DisplayName
+                PrincipalId = $_.PrincipalId
+                RoleDisplayName = $roleDef.DisplayName
+                RoleDescription = $roleDef.Description
+                RoleId = $roleDef.Id
+                DirectoryScopeId = $_.DirectoryScopeId
+                Condition = $_.Condition
+                ConditionRoleDef = $roleDef.RolePermissions.Condition
+                AppId = $principal.AppId
+                AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
+                ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+                IsPimRole = $false
+                IsPimRoleEligible = $false
+                IsPimRoleActive = $false
+            }
         }
-    }
+    } catch {}
+    
     # PIM Roles
 
     ## Elibible
-    $roles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule
-    foreach ($role in $roles) {
-        $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
+    try {
+        $roles = Get-MgRoleManagementDirectoryRoleEligibilitySchedule
+        foreach ($role in $roles) {
+            $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
 
-        $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
+            $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
 
-        $rolesProcessed += [PSCustomObject]@{
-            DirectoryScopeId = $role.DirectoryScopeId
-            PrincipalName = $principal.DisplayName
-            PrincipalId = $role.PrincipalId
-            RoleDisplayName = $roleDef.DisplayName
-            RoleDescription = $roleDef.Description
-            RoleId = $roleDef.Id
-            Condition = $role.Condition
-            ConditionRoleDef = $roleDef.RolePermissions.Condition
-            AppId = $principal.AppId
-            AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
-            ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
-            IsPimRole = $true
-            IsPimRoleEligible = $true
-            IsPimRoleActive = $false
+            $rolesProcessed += [PSCustomObject]@{
+                DirectoryScopeId = $role.DirectoryScopeId
+                PrincipalName = $principal.DisplayName
+                PrincipalId = $role.PrincipalId
+                RoleDisplayName = $roleDef.DisplayName
+                RoleDescription = $roleDef.Description
+                RoleId = $roleDef.Id
+                Condition = $role.Condition
+                ConditionRoleDef = $roleDef.RolePermissions.Condition
+                AppId = $principal.AppId
+                AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
+                ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+                IsPimRole = $true
+                IsPimRoleEligible = $true
+                IsPimRoleActive = $false
+            }
         }
-    }
+    } catch {}
 
     ## Active
-    $roles = Get-MgRoleManagementDirectoryRoleAssignmentSchedule
-    foreach ($role in $roles) {
-        $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
+    try {
+        $roles = Get-MgRoleManagementDirectoryRoleAssignmentSchedule
+        foreach ($role in $roles) {
+            $roleDef = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $role.RoleDefinitionId
 
-        $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
+            $principal = Get-MyAzPrincipalFromId -PrincipalId $role.PrincipalId
 
-        $rolesProcessed += [PSCustomObject]@{
-            DirectoryScopeId = $role.DirectoryScopeId
-            PrincipalName = $principal.DisplayName
-            PrincipalId = $role.PrincipalId
-            RoleDisplayName = $roleDef.DisplayName
-            RoleDescription = $roleDef.Description
-            RoleId = $roleDef.Id
-            Condition = $role.Condition
-            ConditionRoleDef = $roleDef.RolePermissions.Condition
-            AppId = $principal.AppId
-            AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
-            ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
-            IsPimRole = $true
-            IsPimRoleEligible = $true
-            IsPimRoleActive = $true
+            $rolesProcessed += [PSCustomObject]@{
+                DirectoryScopeId = $role.DirectoryScopeId
+                PrincipalName = $principal.DisplayName
+                PrincipalId = $role.PrincipalId
+                RoleDisplayName = $roleDef.DisplayName
+                RoleDescription = $roleDef.Description
+                RoleId = $roleDef.Id
+                Condition = $role.Condition
+                ConditionRoleDef = $roleDef.RolePermissions.Condition
+                AppId = $principal.AppId
+                AllowedResourceActions = $roleDef.RolePermissions.AllowedResourceActions
+                ExcludedResourceActions = $roleDef.RolePermissions.ExcludedResourceActions
+                IsPimRole = $true
+                IsPimRoleEligible = $true
+                IsPimRoleActive = $true
+            }
         }
-    }
-
+    } catch {}
+    
     return $rolesProcessed
 }
 
@@ -174,6 +181,7 @@ function Get-MyAzApplications {
 	    			Name = $keyCredential.DisplayName
 	    			Thumbprint = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
 	    			Type = $keyCredential.Type
+                    Key = $keyCredential.Key
 	    		}
 	    	}
 	    	else {
@@ -182,6 +190,7 @@ function Get-MyAzApplications {
 	    			Name = $keyCredential.DisplayName
 	    			KeyIdentifier = $keyCredential.CustomKeyIdentifier
 	    			Type = $keyCredential.Type
+                    Key = $keyCredential.Key
 	    		}
 	    	}
 	    }
@@ -201,7 +210,8 @@ function Get-MyAzApplications {
 	    		$ServicePrincipalKeyCredentials += [PSCustomObject]@{
 	    			Id = $keyCredential.KeyId
 	    			Name = $keyCredential.DisplayName
-	    			Thumbprint = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
+	    			ThumbprintB64 = [System.Convert]::ToBase64String($keyCredential.CustomKeyIdentifier)
+                    ThumbprintHex = [System.BitConverter]::ToString($keyCredential.CustomKeyIdentifier).Replace("-", "")
 	    			Type = $keyCredential.Type
 	    		}
 	    	}
@@ -237,6 +247,9 @@ function Get-MyAzApplications {
             ServicePrincipalPasswordCredentials = $ServicePrincipalPasswordCredentials
             ServicePrincipalDisplayName = $sp.DisplayName
             ServicePrincipalTags = $sp.Tags
+            PreferredSingleSignOnMode = $sp.PreferredSingleSignOnMode
+            PreferredTokenSigningKeyThumbprint = $sp.PreferredTokenSigningKeyThumbprint
+            ReplyUrls = $sp.ReplyUrls
         }
     }
 
