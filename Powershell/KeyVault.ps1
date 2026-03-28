@@ -1,3 +1,30 @@
+function Get-MyAzKeyVault {
+    $resultsVault = @()
+	$vaults = Get-AzKeyVault
+	foreach ($vault in $vaults) {
+		$roles = Get-AzRoleAssignment -Scope $vault.ResourceId
+		foreach ($role in $roles) {
+			$roleDefinition = Get-AzRoleDefinition -Id $role.RoleDefinitionId
+			$resultsVault += [PSCustomObject]@{
+				vaultName = $vault.VaultName
+				vaultResourceId = $vault.ResourceID
+				RoleDefinitionId = $roleDefinition.Id
+				RoleDefinitionName = $roleDefinition.Name
+				RoleDefinitionIsCustom = $roleDefinition.IsCustom
+				RoleDefinitionDescription = $roleDefinition.Description
+				RoleDefinitionActions = $roleDefinition.Actions
+				RoleDefinitionNotActions = $roleDefinition.NotActions
+				RoleDefintionDataActions = $roleDefinition.DataActions		
+				RoleDefinitionNotDataActions = $roleDefinition.NotDataActions
+				RoleDefinitionAssignableScopes = $roleDefinition.AssignableScopes
+				RoleDefinitionCondition = $roleDefinition.Condition
+				RoleDefinitionConditionVersion = $roleDefinition.ConditionVersion
+			}
+		}
+	}
+    return $resultsVault
+}
+
 function Get-MyAzCertThumbprintBase64 {
     param(
         [string]$ThumbprintHexString

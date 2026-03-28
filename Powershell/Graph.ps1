@@ -138,6 +138,7 @@ function Get-MyAzDirectoryAdministrativeUnits {
             Members = $membersResult
         }
     }
+    return $ausResult
 }
 
 function Set-MyAzUserPassword {
@@ -172,6 +173,8 @@ function Get-MyAzApplications {
     $res = @()
     foreach ($app in $apps) {
         $sp = $sps | where {$_.AppId -eq $app.AppId}
+
+        $AppRolesAssignedTo = Get-MgServicePrincipalAppRoleAssignedTo -ServicePrincipalId $sp.Id
 
         $ApplicationKeyCredentials = @()
 	    foreach ($keyCredential in $app.KeyCredentials) {
@@ -253,6 +256,7 @@ function Get-MyAzApplications {
             PreferredSingleSignOnMode = $sp.PreferredSingleSignOnMode
             PreferredTokenSigningKeyThumbprint = $sp.PreferredTokenSigningKeyThumbprint
             ReplyUrls = $sp.ReplyUrls
+            AppRolesAssignedTo = $AppRolesAssignedTo
         }
     }
 
