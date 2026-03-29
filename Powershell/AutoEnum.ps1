@@ -114,7 +114,7 @@ function Perform-MyAzAutoEnum {
 
 		# Enumerate current permissions over resources
 		Write-Host "Permissions over resources:`n-----------------------------------------------------"
-		for ($resource in $resources) {
+		foreach ($resource in $resources) {
 			$perms = Get-MyAzPermissionOverResource -ResourceUri $resource.Id -ARMAccessToken $ARMAccessToken
 			
 			Write-Host "`t$($resource.Id)"
