@@ -142,8 +142,8 @@ function Get-MyAzAccessTokenFromKeyVaultCertificate {
         'grant_type'            = 'client_credentials'
     })
 
-    Write-Host "Access token:"
-    Write-Host $response.access_token
+    Write-Host "RESPONSE:"
+    $response | ConvertTo-Json
 
-    return $response.access_token
+    return $response
 }

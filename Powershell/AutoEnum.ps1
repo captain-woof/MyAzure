@@ -31,6 +31,8 @@ function Perform-MyAzAutoEnum {
 		Connect-MgGraph -AccessToken ($GraphAccessToken | ConvertTo-SecureString -Force -AsPlainText)
 	}
 
+	$userCurrentId = ''
+
 	############
 	# GRAPH ENUM
 	############
@@ -39,15 +41,22 @@ function Perform-MyAzAutoEnum {
 
 		# Enumerate context
 		Write-Host "Graph context:`n-----------------------------------------------------"
-		Get-MgContext | FL
+		$mgContext = Get-MgContext
+		$mgContext | FL
 
 		# Enumerate users
 		$users = Get-MgUser -All
 		$userCurrent = $users | where { $_.UserPrincipalName -eq $AccountId }
 
+		if ($userCurrent.Id) {
+			$userCurrentId = $userCurrent.Id
+		} else {
+			$userCurrentId = $AccountId
+		}
+
 		# Enumerate group membership
 		Write-Host "Group Memberships of current user:`n-----------------------------------------------------"
-		$groups = Get-MgUserMemberOf -UserId $userCurrent.Id
+		$groups = Get-MgUserMemberOf -UserId $userCurrentId
 		foreach ($group in $groups) {
 		    Write-Host " - $($group.AdditionalProperties.displayName)"
 		}
@@ -69,7 +78,7 @@ function Perform-MyAzAutoEnum {
 
 		# Owned principals
 		Write-Host "Owned principals:`n-----------------------------------------------------"
-		Get-MyAzOwnedPricipals -PrincipalId $userCurrent.Id
+		Get-MyAzOwnedPricipals -PrincipalId $userCurrentId
 
 		# Authentication methods
 		Write-Host "Authentication methods:`n-----------------------------------------------------"
